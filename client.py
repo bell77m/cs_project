@@ -16,7 +16,7 @@ def receive_messages(client_socket):
 
 def chat_client():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(('localhost', 5557))
+    client.connect(('localhost', 5551))
 
 
     receive_thread = threading.Thread(target=receive_messages, args=(client,))

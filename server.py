@@ -7,27 +7,25 @@ import string
 import re
 from datetime import datetime, timedelta
 
-# Database connection
+
 db = mysql.connector.connect(
-    host="127.0.0.1",
+    host="localhost",
     user="bell77m",
     password="237812341",
-    database="chat_db",
-    port=3306
+    database="chat_db"
 )
 cursor = db.cursor()
 
 clients = []
 
 
-# Function to log login attempts
+
 def log_login(user_id, success):
     sql = "INSERT INTO login_logs (user_id, success) VALUES (%s, %s)"
     cursor.execute(sql, (user_id, success))
     db.commit()
 
 
-# Function to broadcast message to all clients
 def broadcast_message(message, sender_socket):
     for client_socket in clients:
         if client_socket != sender_socket:
@@ -110,7 +108,7 @@ def handle_client(client_socket, addr):
                     if user:
                         user_id, password_hash, last_password_change, failed_attempts, account_locked_until = user
 
-
+                        # Check if account is locked
                         if account_locked_until and account_locked_until > datetime.now():
                             client_socket.send(
                                 f"Account locked until {account_locked_until}. Try again later.\n".encode('utf-8'))
@@ -121,18 +119,18 @@ def handle_client(client_socket, addr):
                             log_login(user_id, True)
                             client_socket.send("Login successful!\n".encode('utf-8'))
 
-                            # Reset failed
+                            # Reset failed attempts
                             cursor.execute("UPDATE users SET failed_attempts = 0 WHERE username = %s", (username,))
                             db.commit()
 
-
+                            # Check if password needs to be changed
                             if (datetime.now() - last_password_change).days > 90:
                                 client_socket.send("Your password has expired. Please change it.\n".encode('utf-8'))
 
-
+                            # Add client to active clients list
                             clients.append(client_socket)
 
-
+                            # Notify others
                             broadcast_message(f"{username} has joined the chat.\n".encode('utf-8'), client_socket)
                         else:
                             failed_attempts += 1
@@ -192,13 +190,18 @@ def handle_client(client_socket, addr):
 
 
 # Start the server
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind(('0.0.0.0', 5557))
-server_socket.listen(5)
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('0.0.0.0', 5551))
+    server_socket.listen(5)
 
-print("Server is listening...")
+    print("Server is listening...")
 
-while True:
-    client_socket, addr = server_socket.accept()
-    client_thread = threading.Thread(target=handle_client, args=(client_socket, addr))
-    client_thread.start()
+    while True:
+        client_socket, addr = server_socket.accept()
+        client_thread = threading.Thread(target=handle_client, args=(client_socket, addr))
+        client_thread.start()
+
+
+if __name__ == "__main__":
+    start_server()
