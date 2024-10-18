@@ -36,7 +36,7 @@ def broadcast_message(message, sender_socket):
                 clients.remove(client_socket)
 
 
-# Generate random token for password reset
+# Generate random token -> password reset
 def generate_reset_token():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=20))
 
@@ -56,7 +56,7 @@ def validate_password_strength(password):
     return True, "Password is strong."
 
 
-# Function to handle clients
+# handle clients
 def handle_client(client_socket, addr):
     print(f"Connection established with {addr}")
     authenticated = False
@@ -165,6 +165,7 @@ def handle_client(client_socket, addr):
 
                         client_socket.send(f"Password reset token: {reset_token}\n".encode('utf-8'))
                         client_socket.send("Token expires in 1 hour.\n".encode('utf-8'))
+
                     else:
                         client_socket.send("User not found!\n".encode('utf-8'))
 
