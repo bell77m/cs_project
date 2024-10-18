@@ -108,7 +108,7 @@ def handle_client(client_socket, addr):
                     if user:
                         user_id, password_hash, last_password_change, failed_attempts, account_locked_until = user
 
-                        # Check if account is locked
+                        # account is locked
                         if account_locked_until and account_locked_until > datetime.now():
                             client_socket.send(
                                 f"Account locked until {account_locked_until}. Try again later.\n".encode('utf-8'))
@@ -123,11 +123,11 @@ def handle_client(client_socket, addr):
                             cursor.execute("UPDATE users SET failed_attempts = 0 WHERE username = %s", (username,))
                             db.commit()
 
-                            # Check if password needs to be changed
+                            # password  changed
                             if (datetime.now() - last_password_change).days > 90:
                                 client_socket.send("Your password has expired. Please change it.\n".encode('utf-8'))
 
-                            # Add client to active clients list
+                            # Add client
                             clients.append(client_socket)
 
                             # Notify others
